@@ -11,7 +11,7 @@ Entrez.email = "blotarodriguesa@gmail.com"
 # Conversar sobre docstring
 # Funções de validação --------------------------------------
 
-def validar_argumentos(tema_ids: str, numero_de_ids=5, ordem="relevance"):
+def _validar_argumentos(tema_ids: str, numero_de_ids=5, ordem="relevance"):
     """Função que valida o input de buscar_ids.
     
     Essa função busca validar se os parâmetros são válidos para serem usados. Primeiro verifica-se
@@ -25,8 +25,8 @@ def validar_argumentos(tema_ids: str, numero_de_ids=5, ordem="relevance"):
     Raises:
     """
     if not type(numero_de_ids) == int or not type(tema_ids) == str or not type(ordem) == str:
-            # Verificando se os tipos dos argumentos estão corretos
-            raise TypeError("O tipo de algum dos parâmetros está errado! tema_ids: str, numero_de_ids: int, ordem: str") # conversar TypeError
+        # Verificando se os tipos dos argumentos estão corretos
+        raise TypeError("O tipo de algum dos parâmetros está errado! tema_ids: str, numero_de_ids: int, ordem: str") # conversar TypeError
     
     if numero_de_ids > 300:
         # Verificando se o limite de número de ids está sendo repeitado
@@ -38,7 +38,7 @@ def validar_argumentos(tema_ids: str, numero_de_ids=5, ordem="relevance"):
 
 # Funções de busca --------------------------------------
 
-def buscar_ids(tema_ids: str, numero_de_ids=5, ordem="relevance") -> list:
+def _buscar_ids(tema_ids: str, numero_de_ids=5, ordem="relevance") -> list:
     """Função de busca de ids
 
     Essa função recebe um tema e um número de linha e busca,
@@ -52,7 +52,7 @@ def buscar_ids(tema_ids: str, numero_de_ids=5, ordem="relevance") -> list:
     Raises:
     """
 
-    validar_argumentos(tema_ids, numero_de_ids, ordem)
+    _validar_argumentos(tema_ids, numero_de_ids, ordem)
 
     conexao_ids = Entrez.esearch(
         db = "pubmed", term=tema_ids, retmax=numero_de_ids, sort=ordem
@@ -64,7 +64,7 @@ def buscar_ids(tema_ids: str, numero_de_ids=5, ordem="relevance") -> list:
 
     return lista_ids["IdList"]
 
-def buscar_conteudo(lista_ids: list) -> dict:
+def _buscar_conteudo(lista_ids: list) -> dict:
     """Função de extração de resumos
     
     Essa função recebe uma lista de ids e, no data base do PubMed,
@@ -92,7 +92,7 @@ def buscar_conteudo(lista_ids: list) -> dict:
 
 # Funções de extração --------------------------------------
 
-def extrair_titulo(conteudo: dict) -> list:
+def _extrair_titulo(conteudo: dict) -> list:
     """
     Função de extração de título
 
@@ -112,7 +112,7 @@ def extrair_titulo(conteudo: dict) -> list:
 
     return lista_titulos
 
-def extrair_pubmedid(conteudo: dict) -> str:
+def _extrair_pubmedid(conteudo: dict) -> str:
     """Função de extração de Id
 
     Esse artigo recebe o conteudo de um artigo em forma de dicionário e extrai o Id
@@ -132,7 +132,7 @@ def extrair_pubmedid(conteudo: dict) -> str:
 
     return lista_ids
 
-def extrair_resumo(conteudo: dict) -> str:
+def _extrair_resumo(conteudo: dict) -> str:
     """Função de extração de resumo
 
     Esse artigo recebe o conteudo de um artigo em forma de dicionário e extrai o resumo
@@ -160,7 +160,7 @@ def extrair_resumo(conteudo: dict) -> str:
 
     return lista_resumos
 
-def extrair_resumo_completo(conteudo: dict) -> dict:
+def _extrair_resumo_completo(conteudo: dict) -> dict:
     """Função de extração de resumo completo
 
     Esse artigo recebe o conteudo de um artigo em forma de dicionário e extrai o título,
@@ -174,14 +174,14 @@ def extrair_resumo_completo(conteudo: dict) -> dict:
     Raises:    
     """
     resumo_completo = {}
-    resumo_completo["Título"] = extrair_titulo(conteudo)
-    resumo_completo["Id"] = extrair_pubmedid(conteudo)
-    resumo_completo["Resumo"] = extrair_resumo(conteudo)    
+    resumo_completo["Título"] = _extrair_titulo(conteudo)
+    resumo_completo["Id"] = _extrair_pubmedid(conteudo)
+    resumo_completo["Resumo"] = _extrair_resumo(conteudo)    
     return resumo_completo
 
 # Função main() --------------------------------------
 
-def main(tema: str, quantidade=5, ordem="relevance"):
+def procurar_resumos(tema: str, quantidade=5, ordem="relevance", imprimir=True) -> dict:
     """Função main do projeto
 
     Essa função executa todas as funções em uma ordem específica, visando testar todas as 
@@ -194,24 +194,25 @@ def main(tema: str, quantidade=5, ordem="relevance"):
 
     Raises:
     """
-    lista_de_ids = buscar_ids(tema, quantidade,ordem)
-    conteudo = buscar_conteudo(lista_de_ids)
-    resumos = extrair_resumo_completo(conteudo)
+    lista_de_ids = _buscar_ids(tema, quantidade,ordem)
+    conteudo = _buscar_conteudo(lista_de_ids)
+    resumos = _extrair_resumo_completo(conteudo)
 
-    titulos = resumos["Título"]
-    id = resumos["Id"]
-    resumo = resumos["Resumo"]
+    if imprimir:
+        titulos = resumos["Título"]
+        id = resumos["Id"]
+        resumo = resumos["Resumo"]
 
-    # Alerta de Gambiarra (no range(len(titulos)))
-    for numero_resumo in range(len(titulos)):
-        print("_"*80)
-        print("Título:",titulos[numero_resumo])
-        print("\nId:",id[numero_resumo])
-        print("\nResumo:",resumo[numero_resumo])
-        print("_"*80)
+        for numero_resumo in range(len(titulos)):
+            print("_"*80)
+            print("Título:",titulos[numero_resumo])
+            print("\nId:",id[numero_resumo])
+            print("\nResumo:",resumo[numero_resumo])
+            print("_"*80)
 
+    return resumos
 
 # __main__ --------------------------------------
 
 if __name__ == "__main__":
-    main("Alzheimer", 5)
+    procurar_resumos("Alzheimer", 5)
