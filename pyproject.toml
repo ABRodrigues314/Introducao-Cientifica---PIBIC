@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "biopython>=1.88",
+    "python-docx>=1.2.0",
+]
 
 [project.scripts]
 introducao-cientifica-pibic = "introducao_cientifica_pibic:main"

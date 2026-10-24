@@ -19,7 +19,22 @@ cliente = genai.Client(
 )
 
 def _validar_dados():
-    """"""
+    """Valida a chave de API e o modelo do Gemini configurados no módulo.
+
+    Verifica se a chave de API e o nome do modelo foram preenchidos e se o modelo
+    informado está disponível na conta associada à chave.
+
+    Args:
+        None.
+
+    Returns:
+        list: Lista com os nomes de todos os modelos disponíveis para a chave de
+        API configurada.
+
+    Raises:
+        ChaveInvalidaError: Se a chave de API ou o modelo ainda estiverem com os
+            valores padrão, ou se o modelo informado não estiver disponível.
+    """
     if chave_api == "SUA_CHAVE":
         raise ChaveInvalidaError("Você precisa colocar uma chave")
 
@@ -36,7 +51,21 @@ def _validar_dados():
 
 
 def _gerar_resumo_inicial(resumos: dict, tema: str) -> str:
-    """
+    """Gera um resumo síntese a partir dos primeiros resumos de um tema.
+
+    Valida os dados de configuração e envia ao Gemini um prompt contendo os três
+    primeiros resumos recebidos, solicitando um texto síntese sobre o tema.
+
+    Args:
+        resumos (dict): Dicionário com os resumos dos artigos. Deve conter a chave
+            ``"Resumo"`` com uma lista de strings.
+        tema (str): Tema sobre o qual o resumo síntese será gerado.
+
+    Returns:
+        str: Texto do resumo síntese gerado pelo modelo Gemini.
+
+    Raises:
+        ChaveInvalidaError: Se a chave de API ou o modelo configurados forem inválidos.
     """
     _validar_dados()
     primeiros_resumos = resumos["Resumo"][0:3]
@@ -53,10 +82,26 @@ def _gerar_resumo_inicial(resumos: dict, tema: str) -> str:
     return resumo_inicial.text
 
 def gerar_relatorio(tema: str, quantidade_resumos: int):
-    """
+    """Gera e salva um relatório em DOCX com resumos sobre um tema.
+
+    Busca os resumos no PubMed, gera um resumo síntese com o Gemini e monta um
+    documento contendo o resumo inicial e os resumos individuais dos artigos. O
+    arquivo é salvo como ``relatorio_<tema>.docx`` no diretório atual.
+
+    Args:
+        tema (str): Tema sobre o qual o relatório será gerado.
+        quantidade_resumos (int): Quantidade máxima de resumos a serem buscados.
+
+    Returns:
+        None: A função não retorna valor; o relatório é salvo em disco.
+
+    Raises:
+        ChaveInvalidaError: Se a chave de API ou o modelo configurados forem inválidos.
+        Exception: Erros levantados durante a busca no PubMed ou a geração do
+            documento.
     """
     document = Document()
-    resumos = procurar_resumos(tema, 5, imprimir=False)
+    resumos = procurar_resumos(tema, quantidade_resumos, imprimir=False)
     resumo_inicial = _gerar_resumo_inicial(resumos, tema)
     document.add_heading(f"Relatório sobre {tema}", 0)
     document.add_heading("Resumo Inicial", level=1)
@@ -67,5 +112,5 @@ def gerar_relatorio(tema: str, quantidade_resumos: int):
         document.add_paragraph(resumos["Resumo"][numero_resumo])
     document.save(f"relatorio_{tema}.docx")
 
-gerar_relatorio("Alzheimer", 5)
-
+if __name__ == "__main__":
+    gerar_relatorio("Alzheimer", 5)
