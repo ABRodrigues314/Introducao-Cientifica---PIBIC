@@ -32,6 +32,7 @@ class Mundo():
 
         mapa[int((self.tamanho-1)/2)][int((self.tamanho-1)/2)] = 0
         origem = [[int((self.tamanho-1)/2)],[int((self.tamanho-1)/2)]]
+        print(mapa)
         return mapa, origem
 
     def mover_mapa(self, posicao, sentido):
@@ -73,6 +74,7 @@ class Personagem():
         self.velocidade = velocidade
         self.posicao = [posicao_x, posicao_y]
         self.imagem = pygame.image.load("Personagem/personagem_frente_3.png")
+        self.imagem_n = 1
 
     def animacao(self, direcao): # Aqui tá com problema
         """
@@ -83,56 +85,52 @@ class Personagem():
         
         match direcao:
             case "N":
-                imagem1 = pygame.image.load("Personagem/personagem_costas_1.png")
-                imagem2 = pygame.image.load("Personagem/personagem_costas_3.png")
-                imagem3 = pygame.image.load("Personagem/personagem_costas_2.png")
 
-                if self.imagem == imagem1:
-                    self.imagem = imagem2
-                if self.imagem == imagem2:
-                    self.imagem = imagem3
-                if self.imagem == imagem3:
-                    self.imagem = imagem1
-                print(self.imagem)
+                if self.imagem_n == 1:
+                    self.imagem = pygame.image.load("Personagem/personagem_costas_2.png")
+                    self.imagem_n = 2
+                    time.sleep(0.05)
+                elif self.imagem_n == 2:
+                    self.imagem = pygame.image.load("Personagem/personagem_costas_1.png")
+                    self.imagem_n = 1
+                    time.sleep(0.05)
+                # elif self.imagem_n == 3:
+                #     self.imagem = pygame.image.load("Personagem/personagem_costas_1.png")
+                #     self.imagem_n = 1
+                #     time.sleep(0.1)
+                print(self.imagem_n)
 
             case "S":
-                imagem1 = pygame.image.load("Personagem/personagem_frente_1.png")
-                imagem2 = pygame.image.load("Personagem/personagem_frente_3.png")
-                imagem3 = pygame.image.load("Personagem/personagem_frente_2.png")
 
-                if self.imagem == imagem1:
-                    self.imagem = imagem2
-                if self.imagem == imagem2:
-                    self.imagem = imagem3
-                if self.imagem == imagem3:
-                    self.imagem = imagem1
-                print(self.imagem)
+                if self.imagem_n == 1:
+                    self.imagem = pygame.image.load("Personagem/personagem_frente_2.png")
+                    self.imagem_n = 2
+                    time.sleep(0.05)
+                elif self.imagem_n == 2:
+                    self.imagem = pygame.image.load("Personagem/personagem_frente_1.png")
+                    self.imagem_n = 1
+                    time.sleep(0.05)
 
             case "R":
-                imagem1 = pygame.image.load("Personagem/personagem_direita_1.png")
-                imagem2 = pygame.image.load("Personagem/personagem_direita_3.png")
-                imagem3 = pygame.image.load("Personagem/personagem_direita_2.png")
-
-                if self.imagem == imagem1:
-                    self.imagem = imagem2
-                if self.imagem == imagem2:
-                    self.imagem = imagem3
-                if self.imagem == imagem3:
-                    self.imagem = imagem1
-                print(self.imagem)
+                if self.imagem_n == 1:
+                    self.imagem = pygame.image.load("Personagem/personagem_direita_2.png")
+                    self.imagem_n = 2
+                    time.sleep(0.05)
+                elif self.imagem_n == 2:
+                    self.imagem = pygame.image.load("Personagem/personagem_direita_1.png")
+                    self.imagem_n = 1
+                    time.sleep(0.05)
 
             case "L":
-                imagem1 = pygame.image.load("Personagem/personagem_esquerda_1.png")
-                imagem2 = pygame.image.load("Personagem/personagem_esquerda_3.png")
-                imagem3 = pygame.image.load("Personagem/personagem_esquerda_2.png")
+                if self.imagem_n == 1:
+                    self.imagem = pygame.image.load("Personagem/personagem_esquerda_2.png")
+                    self.imagem_n = 2
+                    time.sleep(0.05)
+                elif self.imagem_n == 2:
+                    self.imagem = pygame.image.load("Personagem/personagem_esquerda_1.png")
+                    self.imagem_n = 1
+                    time.sleep(0.05)
 
-                if self.imagem == imagem1:
-                    self.imagem = imagem2
-                if self.imagem == imagem2:
-                    self.imagem = imagem3
-                if self.imagem == imagem3:
-                    self.imagem = imagem1
-                print(self.imagem)
             case _:
                 print("Uai")
 
@@ -143,16 +141,16 @@ class Personagem():
 
         match direcao:
             case "N":
-                posicao_y -= 5*self.velocidade
+                posicao_y -= 15*self.velocidade
                 self.animacao(direcao)
             case "S":
-                posicao_y += 5*self.velocidade
+                posicao_y += 15*self.velocidade
                 self.animacao(direcao)
             case "R":
-                posicao_x += 5*self.velocidade
+                posicao_x += 15*self.velocidade
                 self.animacao(direcao)
             case "L":
-                posicao_x -= 5*self.velocidade
+                posicao_x -= 15*self.velocidade
                 self.animacao(direcao)
 
         self.posicao = [posicao_x, posicao_y]
