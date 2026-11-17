@@ -18,7 +18,12 @@ class Mundo():
         mapa, origem = self.gerar_mapa()
         self.mapa = mapa
         self.posicao = [0,0]
-        self.salao = pygame.image.load("Salao/salao_1.png")
+        self.saloes = {"salao_1" : [pygame.image.load("Salao/salao_1.png")],
+                       "salao_2" : [pygame.image.load("Salao/salao_2.png")],
+                       "salao_3" : [pygame.image.load("Salao/salao_3.png")],
+                       "salao_4" : [pygame.image.load("Salao/salao_4.png")]}
+        self.salao = self.saloes["salao_1"][0]
+
 
     def gerar_mapa(self):
         mapa = []
@@ -57,83 +62,201 @@ class Mundo():
         sala_numero = mapa[posicao[0]][posicao[1]]
         match sala_numero:
             case 0:
-                salao_principal = pygame.image.load("Salao/salao_1.png")
+                salao_principal = self.saloes["salao_1"][0]
             case 1:
-                salao_principal = pygame.image.load("Salao/salao_2.png")
+                salao_principal = self.saloes["salao_2"][0]
             case 2:
-                salao_principal = pygame.image.load("Salao/salao_3.png")
+                salao_principal = self.saloes["salao_3"][0]
             case 3:
-                salao_principal = pygame.image.load("Salao/salao_4.png")
+                salao_principal = self.saloes["salao_4"][0]
 
         self.salao = salao_principal
 
+    def definir_paredes(self):
+        paredes = {"salao_1" : {"Superior_esquerdo" : [
+                        pygame.Rect(0, 0, 402, 110),
+                        pygame.Rect(0, 0, 200, 155),
+                        pygame.Rect(0, 0, 100, 360),
+                        ],
+                        "Superior_direito" : [
+                        pygame.Rect(598, 0, 1000, 110),
+                        pygame.Rect(800, 0, 1000, 155),
+                        pygame.Rect(900, 0, 1000, 360),
+                        ],
+                        "Inferior_esquerdo" : [
+                        pygame.Rect(0, 655, 402, 150),
+                        pygame.Rect(0, 615, 200, 170),
+                        pygame.Rect(0, 440, 100, 360),
+                        ],
+                        "Inferior_direito" : [
+                        pygame.Rect(595, 655, 402, 150),
+                        pygame.Rect(800, 615, 200, 170),
+                        pygame.Rect(900, 440, 100, 360),
+                        ]},
+
+            "salao_2" : {"Superior_esquerdo" : [
+                        pygame.Rect(0, 0, 430, 160),
+                        pygame.Rect(0, 0, 265, 240),
+                        pygame.Rect(0, 0, 200, 315),
+                        ],
+                        "Superior_direito" : [
+                        pygame.Rect(570, 0, 1000, 160),
+                        pygame.Rect(735, 0, 1000, 240),
+                        pygame.Rect(800, 0, 1000, 315),
+                        ],
+                        "Inferior_esquerdo" : [
+                        pygame.Rect(0, 560, 430, 300),
+                        pygame.Rect(0, 530, 265, 240),
+                        pygame.Rect(0, 430, 200, 320),
+                        ],
+                        "Inferior_direito" : [
+                        pygame.Rect(570, 560, 430, 300),
+                        pygame.Rect(735, 530, 265, 240),
+                        pygame.Rect(800, 430, 200, 320),
+                        ]},
+            "salao_3" : {"Superior_esquerdo" : [
+                        pygame.Rect(0, 0, 445, 160),
+                        pygame.Rect(0, 0, 280, 240),
+                        pygame.Rect(0, 0, 215, 360),
+                        ],
+                        "Superior_direito" : [
+                        pygame.Rect(555, 0, 1000, 160),
+                        pygame.Rect(720, 0, 1000, 240),
+                        pygame.Rect(785, 0, 1000, 360),
+                        ],
+                        "Inferior_esquerdo" : [
+                        pygame.Rect(0, 583, 445, 300),
+                        pygame.Rect(0, 545, 280, 240),
+                        pygame.Rect(0, 435, 215, 320),
+                        ],
+                        "Inferior_direito" : [
+                        pygame.Rect(555, 583, 430, 300),
+                        pygame.Rect(720, 545, 265, 240),
+                        pygame.Rect(785, 435, 220, 320),
+                        ]},
+            "salao_4" : {"Superior_esquerdo" : [
+                        pygame.Rect(0, 0, 415, 100),
+                        pygame.Rect(0, 0, 230, 145),
+                        pygame.Rect(0, 0, 110, 345),
+                        ],
+                        "Superior_direito" : [
+                        pygame.Rect(585, 0, 1000, 100),
+                        pygame.Rect(770, 0, 1000, 145),
+                        pygame.Rect(890, 0, 1000, 345),
+                        ],
+                        "Inferior_esquerdo" : [
+                        pygame.Rect(0, 650, 415, 200),
+                        pygame.Rect(0, 600, 230, 170),
+                        pygame.Rect(0, 440, 110, 360),
+                        ],
+                        "Inferior_direito" : [
+                        pygame.Rect(582, 650, 415, 200),
+                        pygame.Rect(772, 602, 230, 170),
+                        pygame.Rect(890, 440, 110, 360),
+                        ]}}
+
+        return paredes
 
 class Personagem():
     """"""
     def __init__(self, posicao_x, posicao_y, velocidade=1):
         self.velocidade = velocidade
         self.posicao = [posicao_x, posicao_y]
-        self.imagem = pygame.image.load("Personagem/personagem_frente_3.png")
-        self.imagem_n = 1
+        self.quadro = 1
+        self.estado = "parado"
+        self.direcao = "S"
+        self.rect = pygame.Rect(self.posicao[0]+6, self.posicao[1]-1, 40, 48)
+        self.intervalo_animacao = 150
+        self.ultimo_uptade = pygame.time.get_ticks()
+        self.animacoes = {"andando" : {"N" : [pygame.image.load("Personagem/personagem_costas_2.png"),
+                                 pygame.image.load("Personagem/personagem_costas_1.png")],
+                        "S" : [pygame.image.load("Personagem/personagem_frente_2.png"),
+                               pygame.image.load("Personagem/personagem_frente_1.png")],
+                        "R" : [pygame.image.load("Personagem/personagem_direita_2.png"),
+                               pygame.image.load("Personagem/personagem_direita_1.png")],
+                        "L" : [pygame.image.load("Personagem/personagem_esquerda_2.png"),
+                               pygame.image.load("Personagem/personagem_esquerda_1.png")]},
+                        "parado" : {"N" : pygame.image.load("Personagem/personagem_costas_3.png"),
+                        "S" : pygame.image.load("Personagem/personagem_frente_3.png"),
+                        "R" : pygame.image.load("Personagem/personagem_direita_3.png"),
+                        "L" : pygame.image.load("Personagem/personagem_esquerda_3.png")}}
+        
+        self.imagem = self.animacoes[self.estado][self.direcao]
 
-    def animacao(self, direcao): # Aqui tá com problema
+    def animacao(self, direcao, estado):
         """
         É preciso verificar o jeito certo de comparar imagens, pois:
         pygame.image.load(Imagem) == <Surface(130x140x32, global_alpha=255)> -> True
         para toda imagem.
         """
-        
-        match direcao:
-            case "N":
 
-                if self.imagem_n == 1:
-                    self.imagem = pygame.image.load("Personagem/personagem_costas_2.png")
-                    self.imagem_n = 2
-                    time.sleep(0.05)
-                elif self.imagem_n == 2:
-                    self.imagem = pygame.image.load("Personagem/personagem_costas_1.png")
-                    self.imagem_n = 1
-                    time.sleep(0.05)
-                # elif self.imagem_n == 3:
-                #     self.imagem = pygame.image.load("Personagem/personagem_costas_1.png")
-                #     self.imagem_n = 1
-                #     time.sleep(0.1)
-                print(self.imagem_n)
+        tempo_atual = pygame.time.get_ticks()
+        self.direcao = direcao
+        if tempo_atual - self.ultimo_uptade > self.intervalo_animacao:
+            if estado == "andando":
+                match direcao:
+                    case "N":
 
-            case "S":
+                        if self.quadro == 1:
+                            self.imagem = self.animacoes[estado][direcao][0]
+                            self.quadro = 2
 
-                if self.imagem_n == 1:
-                    self.imagem = pygame.image.load("Personagem/personagem_frente_2.png")
-                    self.imagem_n = 2
-                    time.sleep(0.05)
-                elif self.imagem_n == 2:
-                    self.imagem = pygame.image.load("Personagem/personagem_frente_1.png")
-                    self.imagem_n = 1
-                    time.sleep(0.05)
+                        elif self.quadro == 2:
+                            self.imagem = self.animacoes[estado][direcao][1]
+                            self.quadro = 1
 
-            case "R":
-                if self.imagem_n == 1:
-                    self.imagem = pygame.image.load("Personagem/personagem_direita_2.png")
-                    self.imagem_n = 2
-                    time.sleep(0.05)
-                elif self.imagem_n == 2:
-                    self.imagem = pygame.image.load("Personagem/personagem_direita_1.png")
-                    self.imagem_n = 1
-                    time.sleep(0.05)
+                    case "S":
 
-            case "L":
-                if self.imagem_n == 1:
-                    self.imagem = pygame.image.load("Personagem/personagem_esquerda_2.png")
-                    self.imagem_n = 2
-                    time.sleep(0.05)
-                elif self.imagem_n == 2:
-                    self.imagem = pygame.image.load("Personagem/personagem_esquerda_1.png")
-                    self.imagem_n = 1
-                    time.sleep(0.05)
+                        if self.quadro == 1:
+                            self.imagem = self.animacoes[estado][direcao][0]
+                            self.quadro = 2
 
-            case _:
-                print("Uai")
+                        elif self.quadro == 2:
+                            self.imagem = self.animacoes[estado][direcao][1]
+                            self.quadro = 1
 
+                    case "R":
+                        if self.quadro == 1:
+                            self.imagem = self.animacoes[estado][direcao][0]
+                            self.quadro = 2
+
+                        elif self.quadro == 2:
+                            self.imagem = self.animacoes[estado][direcao][1]
+                            self.quadro = 1
+
+                    case "L":
+                        if self.quadro == 1:
+                            self.imagem = self.animacoes[estado][direcao][0]
+                            self.quadro = 2
+
+                        elif self.quadro == 2:
+                            self.imagem = self.animacoes[estado][direcao][1]
+                            self.quadro = 1
+
+                    case _:
+                        print("Uai(andando)")
+
+            elif estado == "parado":
+                match direcao:
+                    case "N":
+                        self.imagem = self.animacoes[estado][direcao]
+
+                    case "S":
+                        self.imagem = self.animacoes[estado][direcao]
+
+                    case "R":
+                        self.imagem = self.animacoes[estado][direcao]
+
+                    case "L":
+                        self.imagem = self.animacoes[estado][direcao]
+
+                    case _:
+                        print("Uai(parado)")
+
+            else:
+                print("Uai(else)")
+
+            self.ultimo_uptade = pygame.time.get_ticks()
 
     def movimentacao(self, direcao):
         posicao_x = self.posicao[0]
@@ -142,19 +265,15 @@ class Personagem():
         match direcao:
             case "N":
                 posicao_y -= 15*self.velocidade
-                self.animacao(direcao)
             case "S":
                 posicao_y += 15*self.velocidade
-                self.animacao(direcao)
             case "R":
                 posicao_x += 15*self.velocidade
-                self.animacao(direcao)
             case "L":
                 posicao_x -= 15*self.velocidade
-                self.animacao(direcao)
-
+        
         self.posicao = [posicao_x, posicao_y]
-
+        self.rect = pygame.Rect(self.posicao[0]+6, self.posicao[1]-1, 40, 48)
 
     def contato_parede(self):
         pass
@@ -184,9 +303,8 @@ class ObjetoEspecial(ObjetoInteragível):
 # ___________________________________________________________________________________________________
 # Inicializando as classes
 mapa = Mundo(5)
-personagem = Personagem(mapa.LARGURA/2, mapa.ALTURA/2)
+personagem = Personagem(mapa.LARGURA/2, mapa.ALTURA/2, velocidade=0.1)
 print(mapa.mapa)
-
 # ___________________________________________________________________________________________________
 # Inicializando o jogo
 pygame.init()
@@ -194,6 +312,7 @@ pygame.init()
 tela = pygame.display.set_mode((mapa.LARGURA, mapa.ALTURA))
 pygame.display.set_caption("Seven Door")
 relogio = pygame.time.Clock()
+paredes = mapa.definir_paredes()
 
 rodando = True
 while rodando:
@@ -208,41 +327,43 @@ while rodando:
     jogador = pygame.transform.scale(personagem.imagem, (50, 50))
     tela.blit(jogador, (personagem.posicao[0], personagem.posicao[1]))
 
+    tempo_atual = pygame.time.get_ticks()
+    if tempo_atual - personagem.ultimo_uptade > 200:
+        personagem.estado = "parado"
+        personagem.animacao(personagem.direcao, personagem.estado)
+
+    # _______________________________________________________________________
+    
+    for parede in paredes["salao_1"]["Superior_esquerdo"]:
+        pygame.draw.rect(tela, (255, 0, 0), parede, 2)
+
+    for parede in paredes["salao_1"]["Superior_direito"]:
+        pygame.draw.rect(tela, (255, 0, 0), parede, 2)
+
+    for parede in paredes["salao_1"]["Inferior_esquerdo"]:
+         pygame.draw.rect(tela, (255, 0, 0), parede, 2)
+
+    for parede in paredes["salao_1"]["Inferior_direito"]:
+         pygame.draw.rect(tela, (255, 0, 0), parede, 2)
+
+    pygame.draw.rect(tela, (0,255,0), personagem.rect, 2)
+
+    # _______________________________________________________________________
+    
     if evento.type == pygame.KEYDOWN:
-        # if evento.key == pygame.K_UP:
-        #     mapa.mover_mapa(mapa.posicao, "N")
-        #     mapa.renderizar_mapa(mapa.mapa, mapa.posicao)
-        #     print("Norte")
-        #     time.sleep(0.3)
-
-        # if evento.key == pygame.K_DOWN:
-        #     mapa.mover_mapa(mapa.posicao, "S")
-        #     mapa.renderizar_mapa(mapa.mapa, mapa.posicao)
-        #     print("Sul")
-        #     time.sleep(0.3)
-            
-        # if evento.key == pygame.K_LEFT:
-        #     mapa.mover_mapa(mapa.posicao, "O")
-        #     mapa.renderizar_mapa(mapa.mapa, mapa.posicao)
-        #     print("Oeste")
-        #     time.sleep(0.3)
-
-        # if evento.key == pygame.K_RIGHT:
-        #     mapa.mover_mapa(mapa.posicao, "L")
-        #     mapa.renderizar_mapa(mapa.mapa, mapa.posicao)
-        #     print("Leste")
-        #     time.sleep(0.3)
-
+        personagem.estado = "andando"
         if evento.key == pygame.K_UP:
             personagem.movimentacao("N")
+            personagem.animacao("N",personagem.estado)
         if evento.key == pygame.K_DOWN:
             personagem.movimentacao("S")
+            personagem.animacao("S",personagem.estado)
         if evento.key == pygame.K_LEFT:
             personagem.movimentacao("L")
+            personagem.animacao("L",personagem.estado)
         if evento.key == pygame.K_RIGHT:
             personagem.movimentacao("R")
-
-
+            personagem.animacao("R",personagem.estado)
 
     pygame.display.flip()
     relogio.tick(60)
