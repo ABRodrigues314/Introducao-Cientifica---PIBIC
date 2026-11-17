@@ -22,8 +22,8 @@ class Mundo():
                        "salao_2" : [pygame.image.load("Salao/salao_2.png")],
                        "salao_3" : [pygame.image.load("Salao/salao_3.png")],
                        "salao_4" : [pygame.image.load("Salao/salao_4.png")]}
-        self.salao = self.saloes["salao_1"][0]
-
+        self.salao_nome = "salao_2"
+        self.salao = self.saloes[self.salao_nome][0]
 
     def gerar_mapa(self):
         mapa = []
@@ -49,26 +49,33 @@ class Mundo():
                 posicao_nova = [posicao[0],posicao[1]-1]
             case "L":
                 posicao_nova = [posicao[0]+1,posicao[1]]
-            case "O":
+            case "R":
                 posicao_nova = [posicao[0]-1,posicao[1]]
             case _:
                 posisao_nova = posicao
 
         self.posicao = posicao_nova
 
-    def renderizar_mapa(self, mapa, posicao = [0,0]):
+    def renderizar_mapa(self):
         # Criar um tratamento do erro index out of range
         
-        sala_numero = mapa[posicao[0]][posicao[1]]
+        mapa = self.mapa
+        posicao_mapa = self.posicao
+        print(posicao_mapa)
+        sala_numero = mapa[posicao_mapa[0]][posicao_mapa[1]]
         match sala_numero:
             case 0:
                 salao_principal = self.saloes["salao_1"][0]
+                self.salao_nome = "salao_1"
             case 1:
                 salao_principal = self.saloes["salao_2"][0]
+                self.salao_nome = "salao_2"
             case 2:
                 salao_principal = self.saloes["salao_3"][0]
+                self.salao_nome = "salao_3"
             case 3:
                 salao_principal = self.saloes["salao_4"][0]
+                self.salao_nome = "salao_4"
 
         self.salao = salao_principal
 
@@ -162,6 +169,7 @@ class Personagem():
     def __init__(self, posicao_x, posicao_y, velocidade=1):
         self.velocidade = velocidade
         self.posicao = [posicao_x, posicao_y]
+        self.tamanho = 1
         self.quadro = 1
         self.estado = "parado"
         self.direcao = "S"
@@ -180,8 +188,8 @@ class Personagem():
                         "S" : pygame.image.load("Personagem/personagem_frente_3.png"),
                         "R" : pygame.image.load("Personagem/personagem_direita_3.png"),
                         "L" : pygame.image.load("Personagem/personagem_esquerda_3.png")}}
-        
         self.imagem = self.animacoes[self.estado][self.direcao]
+        self.quadrante = "Superior_esquerdo"
 
     def animacao(self, direcao, estado):
         """
@@ -264,19 +272,28 @@ class Personagem():
 
         match direcao:
             case "N":
-                posicao_y -= 15*self.velocidade
+                posicao_y -= 10*self.velocidade
             case "S":
-                posicao_y += 15*self.velocidade
+                posicao_y += 10*self.velocidade
             case "R":
-                posicao_x += 15*self.velocidade
+                posicao_x += 10*self.velocidade
             case "L":
-                posicao_x -= 15*self.velocidade
+                posicao_x -= 10*self.velocidade
         
         self.posicao = [posicao_x, posicao_y]
         self.rect = pygame.Rect(self.posicao[0]+6, self.posicao[1]-1, 40, 48)
 
-    def contato_parede(self):
-        pass
+    def localizar_quadrante(self, dimensoes_mundo: list):
+        if self.posicao[0] > dimensoes_mundo[0]/2:
+            if self.posicao[1] > dimensoes_mundo[1]/2:
+                self.quadrante = "Inferior_direito"
+            elif self.posicao[1] < dimensoes_mundo[1]/2:
+                self.quadrante = "Superior_direito"
+        elif self.posicao[0] < dimensoes_mundo[0]/2:
+            if self.posicao[1] > dimensoes_mundo[1]/2:
+                self.quadrante = "Inferior_esquerdo"
+            elif self.posicao[1] < dimensoes_mundo[1]/2:
+                self.quadrante = "Superior_esquerdo"
 
 class Salas():
     """"""
@@ -303,7 +320,7 @@ class ObjetoEspecial(ObjetoInteragível):
 # ___________________________________________________________________________________________________
 # Inicializando as classes
 mapa = Mundo(5)
-personagem = Personagem(mapa.LARGURA/2, mapa.ALTURA/2, velocidade=0.1)
+personagem = Personagem(mapa.LARGURA/2 - 20, mapa.ALTURA/2 - 20, velocidade=1)
 print(mapa.mapa)
 # ___________________________________________________________________________________________________
 # Inicializando o jogo
@@ -324,7 +341,7 @@ while rodando:
     salao = pygame.transform.scale(mapa.salao, (mapa.LARGURA, mapa.ALTURA))
     tela.blit(salao)
 
-    jogador = pygame.transform.scale(personagem.imagem, (50, 50))
+    jogador = pygame.transform.scale(personagem.imagem, (50*personagem.tamanho, 50*personagem.tamanho))
     tela.blit(jogador, (personagem.posicao[0], personagem.posicao[1]))
 
     tempo_atual = pygame.time.get_ticks()
@@ -334,23 +351,68 @@ while rodando:
 
     # _______________________________________________________________________
     
-    for parede in paredes["salao_1"]["Superior_esquerdo"]:
+    for parede in paredes[mapa.salao_nome]["Superior_esquerdo"]:
         pygame.draw.rect(tela, (255, 0, 0), parede, 2)
 
-    for parede in paredes["salao_1"]["Superior_direito"]:
+    for parede in paredes[mapa.salao_nome]["Superior_direito"]:
         pygame.draw.rect(tela, (255, 0, 0), parede, 2)
 
-    for parede in paredes["salao_1"]["Inferior_esquerdo"]:
-         pygame.draw.rect(tela, (255, 0, 0), parede, 2)
+    for parede in paredes[mapa.salao_nome]["Inferior_esquerdo"]:
+        pygame.draw.rect(tela, (255, 0, 0), parede, 2)
 
-    for parede in paredes["salao_1"]["Inferior_direito"]:
-         pygame.draw.rect(tela, (255, 0, 0), parede, 2)
+    for parede in paredes[mapa.salao_nome]["Inferior_direito"]:
+        pygame.draw.rect(tela, (255, 0, 0), parede, 2)
 
     pygame.draw.rect(tela, (0,255,0), personagem.rect, 2)
 
     # _______________________________________________________________________
-    
-    if evento.type == pygame.KEYDOWN:
+    # Contato com a parede
+    contato = False
+    for parede in paredes[mapa.salao_nome][personagem.quadrante]:
+        if personagem.rect.colliderect(parede):
+            contato == True
+            match personagem.direcao:
+                case "N":
+                    personagem.velocidade = 0.1
+                    while personagem.rect.colliderect(parede):
+                        personagem.movimentacao("S")
+                case "S":
+                    personagem.velocidade = 0.1
+                    while personagem.rect.colliderect(parede):
+                        personagem.movimentacao("N")
+                case "R":
+                    personagem.velocidade = 0.1
+                    while personagem.rect.colliderect(parede):
+                        personagem.movimentacao("L")
+                case "L":
+                    personagem.velocidade = 0.1
+                    while personagem.rect.colliderect(parede):
+                        personagem.movimentacao("R")
+
+            personagem.velocidade = 1
+
+        contato = False
+
+    # _______________________________________________________________________
+    # mudança de salas
+
+    if personagem.posicao[0] < -25 or personagem.posicao[0] > 975 or personagem.posicao[1] < -25 or personagem.posicao[1] > 775:
+        mapa.mover_mapa(mapa.posicao, personagem.direcao)
+        mapa.renderizar_mapa()
+        match personagem.direcao:
+            case "N":
+                personagem.posicao = [mapa.LARGURA/2, 770]
+            case "S":
+                personagem.posicao = [mapa.LARGURA/2, -20]
+            case "R":
+                personagem.posicao = [-20, (mapa.ALTURA/2)-30]
+            case "L":
+                personagem.posicao = [970, (mapa.ALTURA/2)-30]
+
+    # _______________________________________________________________________
+    # Andar
+
+    if evento.type == pygame.KEYDOWN and not contato:
         personagem.estado = "andando"
         if evento.key == pygame.K_UP:
             personagem.movimentacao("N")
@@ -364,10 +426,9 @@ while rodando:
         if evento.key == pygame.K_RIGHT:
             personagem.movimentacao("R")
             personagem.animacao("R",personagem.estado)
-
+    personagem.localizar_quadrante([mapa.LARGURA, mapa.ALTURA])
+        
     pygame.display.flip()
     relogio.tick(60)
     
-
 pygame.quit()
-
