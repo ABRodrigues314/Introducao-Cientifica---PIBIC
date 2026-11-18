@@ -17,12 +17,12 @@ class Mundo():
         self.ALTURA = 800
         mapa, origem = self.gerar_mapa()
         self.mapa = mapa
-        self.posicao = [0,0]
+        self.posicao = [int((tamanho-1)/2),int((tamanho-1)/2)]
         self.saloes = {"salao_1" : [pygame.image.load("Salao/salao_1.png")],
                        "salao_2" : [pygame.image.load("Salao/salao_2.png")],
                        "salao_3" : [pygame.image.load("Salao/salao_3.png")],
                        "salao_4" : [pygame.image.load("Salao/salao_4.png")]}
-        self.salao_nome = "salao_2"
+        self.salao_nome = "salao_1"
         self.salao = self.saloes[self.salao_nome][0]
 
     def gerar_mapa(self):
@@ -37,7 +37,6 @@ class Mundo():
 
         mapa[int((self.tamanho-1)/2)][int((self.tamanho-1)/2)] = 0
         origem = [[int((self.tamanho-1)/2)],[int((self.tamanho-1)/2)]]
-        print(mapa)
         return mapa, origem
 
     def mover_mapa(self, posicao, sentido):
@@ -295,33 +294,80 @@ class Personagem():
             elif self.posicao[1] < dimensoes_mundo[1]/2:
                 self.quadrante = "Superior_esquerdo"
 
-class Salas():
+class Objetos():
     """"""
-    def __init__(self):
-        pass 
+    def __init__(self, tamanho, imagem):
+        self.tamanho = tamanho
+        self.mapa = self.gerar_mapa()
+        self.imagens = {"chave" : pygame.image.load("Itens/chave_portao.png"),
+                        "bussola" : pygame.image.load("Itens/bussola.png"),
+                        "chapeu" : pygame.image.load("Itens/chapeu_de_mago.png"),
+                        "saco_de_moedas" : pygame.image.load("Itens/saco_de_moedas.png"),
+                        "moeda" : pygame.image.load("Itens/moedas.png")}
+        self.imagem = self.imagens[imagem]
+        self.rects = {"chave" : (480, 380, 40, 40),
+                    "bussola" : (475, 375, 50, 50),
+                    "chapeu" : (475, 375, 50, 50),
+                    "saco_de_moedas" : (485, 385, 30, 30),
+                    "moeda" : (490, 390, 20, 20)}
 
-class Objeto():
-    """"""
-    def __init__(self, quarto_x, quarto_y):
-        self.x = quarto_x
-        self.y = quarto_y
+        self.rect = pygame.Rect(self.rects[imagem][0], 
+                                self.rects[imagem][1], 
+                                self.rects[imagem][2], 
+                                self.rects[imagem][3])
 
-class ObjetoInteragível(Objeto):
+    def gerar_mapa(self):
+        mapa = []
+        while len(mapa) != self.tamanho:
+            fileira = []
+            while len(fileira) != self.tamanho:
+                fileira.append(0)
+            mapa.append(fileira[:])
+        
+        return mapa
 
-    """"""
-    def __init__(self):
-        pass 
+    def sortear_objetos(self, quantidade: int, historico):
 
-class ObjetoEspecial(ObjetoInteragível):
+        while quantidade != 0:
+            x = random.randint(0, self.tamanho-1)
+            y = random.randint(0, self.tamanho-1)
+            if (x,y) not in historico:
+                self.mapa[x][y] = 1
+                historico.append((x,y))
+                quantidade -= 1
+
+        return historico
+
+class Portoes():
     """"""
     def __init__(self):
         pass 
 
 # ___________________________________________________________________________________________________
 # Inicializando as classes
-mapa = Mundo(5)
+# Mundo
+n = 21
+if n % 2 == 1 and n > 10:
+    mapa = Mundo(n)
+else:
+    print("Opa, valor inválido")
+
+# personagem
 personagem = Personagem(mapa.LARGURA/2 - 20, mapa.ALTURA/2 - 20, velocidade=1)
-print(mapa.mapa)
+
+# Objetos
+chaves = Objetos(mapa.tamanho, "chave")
+bussola = Objetos(mapa.tamanho, "bussola")
+chapeu_de_mago = Objetos(mapa.tamanho, "chapeu")
+saco_de_moedas = Objetos(mapa.tamanho, "saco_de_moedas")
+moedas = Objetos(mapa.tamanho, "moeda")
+
+historico = chaves.sortear_objetos(7, [((mapa.tamanho-1)/2,(mapa.tamanho-1)/2)])
+historico = bussola.sortear_objetos(12, historico)
+historico = chapeu_de_mago.sortear_objetos(12, historico)
+historico = saco_de_moedas.sortear_objetos(20, historico)
+moedas.sortear_objetos(int(((mapa.tamanho**2)-1)/2), historico)
+
 # ___________________________________________________________________________________________________
 # Inicializando o jogo
 pygame.init()
@@ -341,9 +387,44 @@ while rodando:
     salao = pygame.transform.scale(mapa.salao, (mapa.LARGURA, mapa.ALTURA))
     tela.blit(salao)
 
+    if chaves.mapa[mapa.posicao[0]][mapa.posicao[1]] == 1:
+        chave_ = pygame.transform.scale(chaves.imagem, (40,40))
+        tela.blit(chave_, (mapa.LARGURA/2-20, mapa.ALTURA/2-20))
+        if chaves.rect.colliderect(personagem.rect):
+            chaves.mapa[mapa.posicao[0]][mapa.posicao[1]] = 0
+        pygame.draw.rect(tela, (0,255,0), chaves.rect, 2)
+    
+    if bussola.mapa[mapa.posicao[0]][mapa.posicao[1]] == 1:
+        bussola_ = pygame.transform.scale(bussola.imagem, (50,50))
+        tela.blit(bussola_, (mapa.LARGURA/2-25, mapa.ALTURA/2-25))
+        if bussola.rect.colliderect(personagem.rect):
+            bussola.mapa[mapa.posicao[0]][mapa.posicao[1]] = 0
+        pygame.draw.rect(tela, (0,255,0), bussola.rect, 2)
+    
+    if chapeu_de_mago.mapa[mapa.posicao[0]][mapa.posicao[1]] == 1:
+        chapeu_de_mago_ = pygame.transform.scale(chapeu_de_mago.imagem, (50,50))
+        tela.blit(chapeu_de_mago_, (mapa.LARGURA/2-25, mapa.ALTURA/2-25))
+        if chapeu_de_mago.rect.colliderect(personagem.rect):
+            chapeu_de_mago.mapa[mapa.posicao[0]][mapa.posicao[1]] = 0
+        pygame.draw.rect(tela, (0,255,0), chapeu_de_mago.rect, 2)
+    
+    if saco_de_moedas.mapa[mapa.posicao[0]][mapa.posicao[1]] == 1:
+        saco_de_moedas_ = pygame.transform.scale(saco_de_moedas.imagem, (30,30))
+        tela.blit(saco_de_moedas_, (mapa.LARGURA/2-15, mapa.ALTURA/2-15))
+        if saco_de_moedas.rect.colliderect(personagem.rect):
+            saco_de_moedas.mapa[mapa.posicao[0]][mapa.posicao[1]] = 0
+        pygame.draw.rect(tela, (0,255,0), saco_de_moedas.rect, 2)
+    
+    if moedas.mapa[mapa.posicao[0]][mapa.posicao[1]] == 1:
+        moedas_ = pygame.transform.scale(moedas.imagem, (20,20))
+        tela.blit(moedas_, (mapa.LARGURA/2-10, mapa.ALTURA/2-10))
+        if moedas.rect.colliderect(personagem.rect):
+            moedas.mapa[mapa.posicao[0]][mapa.posicao[1]] = 0
+        pygame.draw.rect(tela, (0,255,0), moedas.rect, 2)
+
     jogador = pygame.transform.scale(personagem.imagem, (50*personagem.tamanho, 50*personagem.tamanho))
     tela.blit(jogador, (personagem.posicao[0], personagem.posicao[1]))
-
+    
     tempo_atual = pygame.time.get_ticks()
     if tempo_atual - personagem.ultimo_uptade > 200:
         personagem.estado = "parado"
